@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  web:
+    image: httpd:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./html:/usr/local/apache2/htdocs/
+    restart: always
+
+  php:
+    image: php:apache
+    ports:
+      - "8000:80"
+    volumes:
+      - ./html:/var/www/html/
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: Senha123
+      MYSQL_DATABASE: testedb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: Senha1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: always
+
+volumes:
+  db_data:
